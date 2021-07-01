@@ -1,0 +1,110 @@
+#!/bin/bash
+# generates dummy system dictionaries, i.e. the minimal requirement for creating a polyMesh data
+# last update: 2021-06-30
+ 
+printhelp() {
+  echo ""
+  echo " Usage:    ofdummySystemDictionaries [application(=icoFoam)]"
+  echo ""
+  echo " Examples: ofdummySystemDictionaries"
+  echo "           ofdummySystemDictionaries cartesianMesh"
+  echo ""
+}  
+
+READY=1
+APPLI=icoFoam
+
+createSystemDictionaries() {
+
+folder=system
+if [ ! -d ${folder} ]; then
+  mkdir ${folder}
+else 
+  echo ":-0 System folder '${folder}' already exists!"
+  exit 0
+fi
+
+echo "FoamFile {
+  version  2.0;
+  format  ascii;
+  class  dictionary;
+  object  fvSchemes;
+}
+
+ddtSchemes {
+}
+
+gradSchemes {
+}
+
+divSchemes {
+}
+
+laplacianSchemes {
+}
+
+interpolationSchemes {
+}
+
+snGradSchemes {
+}
+" > system/fvSchemes
+
+echo "FoamFile {
+  version  2.0;
+  format  ascii;
+  class  dictionary;
+  object  fvSolution;
+}
+
+solvers {
+}
+" > ./system/fvSolution
+
+echo "FoamFile {
+  version  2.0;
+  format  ascii;
+  class  dictionary;
+  object  controlDict;
+}
+
+application  ${APPLI};
+
+startFrom  latestTime;
+startTime  0;
+stopAt  endTime;
+endTime  10;
+deltaT  0.05;
+writeControl  timeStep;
+writeInterval  20;
+" > system/controlDict
+
+if [ -x "$(command -v tree)" ]; then
+  tree --dirsfirst .
+fi
+
+}
+
+if [ $# -eq 1 ]; then
+  case $1 in
+    -h|--help)
+      printhelp
+      exit 0
+      ;;
+    *)
+      if [ -x "$(command -v $1 2>/dev/null)" ]; then
+        APPLI=$1
+      else
+        READY=0
+        echo ":-0 Cannot find application '$1' in your PATH!"
+        printhelp
+        exit 0
+      fi
+      ;;
+  esac
+fi
+
+if [ ${READY} -eq 1 ]; then
+  createSystemDictionaries
+fi
+
