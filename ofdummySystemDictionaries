@@ -1,6 +1,6 @@
 #!/bin/bash
-# generates dummy system dictionaries, i.e. the minimal requirement for creating a polyMesh data
-# last update: 2021-06-30
+# generates dummy system dictionaries; the minimal requirement for creating mesh data
+# last update: 2021-07-02
  
 printhelp() {
   echo ""
@@ -16,11 +16,10 @@ APPLI=icoFoam
 
 createSystemDictionaries() {
 
-folder=system
-if [ ! -d ${folder} ]; then
-  mkdir ${folder}
+if [ ! -d system ]; then
+  mkdir system
 else 
-  echo ":-0 System folder '${folder}' already exists!"
+  echo ":-0 System folder already exists! Action cancelled."
   exit 0
 fi
 
@@ -59,7 +58,7 @@ echo "FoamFile {
 
 solvers {
 }
-" > ./system/fvSolution
+" > system/fvSolution
 
 echo "FoamFile {
   version  2.0;

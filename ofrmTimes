@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+# clears the '<time>' folders from a case root directory excluding the '0' one
+foamListTimes -rm
+

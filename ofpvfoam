@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+# launches paraview from a case root directory
+if [ -d constant ]; then
+  touch pv.foam
+  paraview --data=pv.foam &
+else
+  paraview &
+fi
+

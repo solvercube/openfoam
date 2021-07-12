@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+# restores the '0' time folder contents from the '0.orig' storage
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions
+restore0Dir
+

@@ -1,0 +1,68 @@
+#!/bin/bash
+# generates a residuals plot image from the given log file (i.e. '$1') in the target region ('$2') for the variables ('$3' onwards)
+# last update: 2021-07-03
+
+printhelp() {
+echo ""
+echo " Usage:    ofplotResidualsMR <\"regions-string\"> <log-file> <field-variables>"
+echo ""
+echo " Examples:"
+echo "           ofplotResidualsMR log \"fluid region fluid\" p_rgh epsilon k"
+echo "           ofplotResidualsMR log.chtMultiRegionFoam \"solid region floor\" h"
+echo ""
+}
+
+MREGION=$2
+MSTRING=$(echo ${MREGION} | tr " " "_")
+DATFILE="plotResidualsMR_${MSTRING}.dat"
+GNUFILE="plotResidualsMR_${MSTRING}.gnu"
+PNGNAME="plotResidualsMR_${MSTRING}.png"
+
+creategnufile () {
+echo "# content of plotResiduals.gnu ##
+set term pngcairo size 960, 640 enhanced
+set out \"${PNGNAME}\"
+set grid
+set logscale x
+set logscale y
+set xlabel 'Time [s] or Timestep [-]'
+set ylabel 'Residuals [-]'
+set key top right
+plot $1
+" > ${GNUFILE}
+}
+
+case $# in
+  0|1)
+    printhelp
+    ;;
+  *)
+    if [ -f $1 ]; then
+      pid1=$(ofcatchDataFromBlock $1 "^Time =" "^ExecutionTime =" "^Time =" 3 > ${DATFILE})
+      wait ${pid1}
+      PLOTSTR=""
+      let l=$#-2
+      let m=3
+      while [ $m -le $# ]
+      do
+        pid2=$(ofcatchDataFromBlock $1 "Solving for $2" "Solving for ${!m}," "Solving for ${!m}," 8 > tmp.$$)
+        wait ${pid2}
+        pid3=$(paste ${DATFILE} tmp.$$ > tmp.02)
+        wait ${pid3}
+        pid4=$(mv tmp.02 ${DATFILE})
+        wait ${pid4}
+        let n=m-1
+        PLOTSTR+="\"${DATFILE}\" using 1:${n} title '${!m}' with lines ,"
+        ((m++))
+      done
+      rm tmp.*
+      PLOTSTR=$(echo "${PLOTSTR}" | sed 's/,$//')
+      creategnufile "${PLOTSTR}"
+      gnuplot "${GNUFILE}"
+    else
+      echo ":-0 The log file '$1' does not exists."
+      exit 1      
+    fi
+    ;;
+esac
+

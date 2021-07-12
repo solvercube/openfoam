@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+# runs the `tail -f` command for the given log file (i.e. '$1') for 3 seconds and then quits itself
+# last update: 2021-07-02
+
+tail -f $1 2>&1 &
+pid0=$!
+sleep 3
+kill $pid0
+
